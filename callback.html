@@ -27,15 +27,14 @@
         const data = await res.json();
         console.log("Login success:", data);
 
-        localStorage.setItem("accessToken", resp.accessToken);
-        localStorage.setItem("refreshToken", resp.refreshToken);
-        localStorage.setItem("accessExpSeconds", resp.accessExpSeconds);
-        localStorage.setItem("refreshExpSeconds", resp.refreshExpSeconds);
-        localStorage.setItem("tokenType", resp.tokenType);
+        // Lưu tất cả field mà BE trả về
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("accessExpSeconds", data.accessExpSeconds);
+        localStorage.setItem("refreshExpSeconds", data.refreshExpSeconds);
+        localStorage.setItem("tokenType", data.tokenType);
 
-
-
-        // Redirect
+        // Redirect sau khi login thành công
         window.location.href = "/dashboard.html";
       } catch (err) {
         document.body.innerText = "Login failed: " + err.message;
