@@ -1,45 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Magic Link Callback</title>
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get("token");
-
-      if (!token) {
-        document.body.innerText = "Missing token!";
-        return;
-      }
-
-      try {
-        const res = await fetch("http://localhost:8080/api/v1/auth/magiclink/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token })
-        });
-
-        if (!res.ok) {
-          throw new Error("Verify failed: " + res.status);
-        }
-
-        const data = await res.json();
-        console.log("Login success:", data);
-
-        // Lưu token
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-
-        // Redirect
-        window.location.href = "/dashboard.html";
-      } catch (err) {
-        document.body.innerText = "Login failed: " + err.message;
-      }
-    });
-  </script>
+  <title>Signing you in…</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f7f7f8; margin:0; }
+    .wrap { max-width:420px; margin:10vh auto; background:#fff; border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,.06); padding:24px; }
+    .title { font-size:18px; margin:0 0 8px; }
+    .muted { color:#666; font-size:14px; }
+    .log { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#fafafa; border:1px solid #eee; border-radius:8px; padding:12px; font-size:12px; white-space:pre-wrap; word-break:break-word; }
+    .ok { color:#0a7f2e; }
+    .err { color:#b00020; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:8px; background:#0d6efd; color:#fff; text-decoration:none; }
+    .spin {
+      width:18px;height:18px;border-radius:50%;
+      border:3px solid #ddd;border-top-color:#0d6efd; display:inline-block;
+      animation: r 1s linear infinite; vertical-align:middle; margin-right:8px;
+    }
+    @keyframes r { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-  <p>Logging you in...</p>
+  <div class="wrap">
+    <h1 class="title">Signing you in…</h1>
+    <p class="muted">Đang xác thực magic link, vui lòng chờ trong giây lát.</p>
+    <p class="muted"><span class="spin"></span><span id="status">Khởi tạo…</span></p>
+    <details>
+      <summary>Chi tiết</summary>
+      <div class="log" id="log"></div>
+    </details>
+    <p id="next" style="display:none;margin-top:16px;">
+      <a class="btn" id="go">Tiếp tục</a>
+    </p>
+  </div>
+
+<script>
+  // ====== cấu hình nhanh ======
+  const API_BASE = "https://api.example.com"; // 🔁 đổi thành BE của bạn (origin API)
+  const VERIFY_PATH = "/api/v1/auth/magiclink/verify";
+
+  // ====== helper ======
+  const qs = new URLSearchParams(location.search);
+  const token = qs.get("token");
+  const redirectQuery = qs.get("redirect") || ""; // optional
+
+  const $status = document.getElementById("status");
+  const $log = document.getElementById("log");
+  const $nextWrap = document.getElementById("next");
+  const $go = document.getElementById("go");
+
+  function logLine(s){ $log.textContent += s + "\n"; }
+  function setStatus(s){ $status.textContent = s; logLine(s); }
+
+  async function verify() {
+    if (!token) {
+      setStatus("Không tìm thấy token trong URL.");
+      $log.classList.add("err");
+      return;
+    }
+
+    setStatus("Gửi yêu cầu xác thực...");
+    try {
+      const res = await fetch(API_BASE + VERIFY_PATH, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      logLine("Response: " + JSON.stringify(data));
+
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || "Verify failed");
+      }
+
+      // data: { accessToken, refreshToken, user, redirectUrl, ... }
+      setStatus("Đăng nhập thành công ✅");
+      $log.classList.add("ok");
+
+      // Lưu token (tùy app bạn dùng cookie/httpOnly thì bỏ đoạn này)
+      try {
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken || "");
+      } catch (e) { /* ignore */ }
+
+      // Quy tắc chọn redirect:
+      // 1) redirectUrl server trả về (nếu có)
+      // 2) ?redirect=... ở URL hiện tại (nếu có)
+      // 3) mặc định /dashboard
+      const nextUrl = data.redirectUrl || redirectQuery || "/dashboard";
+      $go.href = nextUrl;
+      $nextWrap.style.display = "block";
+
+      // Auto-redirect sau 1.2s
+      setTimeout(() => location.href = nextUrl, 1200);
+    } catch (err) {
+      setStatus("Lỗi xác thực: " + err.message);
+      $log.classList.add("err");
+    }
+  }
+
+  verify();
+</script>
 </body>
 </html>
