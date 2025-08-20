@@ -27,12 +27,12 @@
         const data = await res.json();
         console.log("Login success:", data);
 
-        // Lưu token
         localStorage.setItem("accessToken", resp.accessToken);
         localStorage.setItem("refreshToken", resp.refreshToken);
-        localStorage.setItem("accessTokenExpiresIn", resp.accessTokenExpiresIn);
-        localStorage.setItem("refreshTokenExpiresIn", resp.refreshTokenExpiresIn);
+        localStorage.setItem("accessExpSeconds", resp.accessExpSeconds);
+        localStorage.setItem("refreshExpSeconds", resp.refreshExpSeconds);
         localStorage.setItem("tokenType", resp.tokenType);
+
 
 
         // Redirect
