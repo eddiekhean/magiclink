@@ -28,8 +28,12 @@
         console.log("Login success:", data);
 
         // Lưu token
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("accessToken", resp.accessToken);
+        localStorage.setItem("refreshToken", resp.refreshToken);
+        localStorage.setItem("accessTokenExpiresIn", resp.accessTokenExpiresIn);
+        localStorage.setItem("refreshTokenExpiresIn", resp.refreshTokenExpiresIn);
+        localStorage.setItem("tokenType", resp.tokenType);
+
 
         // Redirect
         window.location.href = "/dashboard.html";
