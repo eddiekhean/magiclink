@@ -83,6 +83,9 @@
       try {
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken || "");
+        localStorage.setItem("accessToken", resp.accessToken);
+        localStorage.setItem("refreshToken", resp.refreshToken);
+
       } catch (e) { /* ignore */ }
 
       // Quy tắc chọn redirect:
