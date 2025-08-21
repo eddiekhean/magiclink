@@ -20,30 +20,18 @@
           body: JSON.stringify({ token })
         });
 
-        const json = await res.json();
-        console.log("Raw verify response:", json);
+        const text = await res.text(); // lấy raw text trước
+        console.log("Raw response text:", text);
 
-        if (!res.ok || !json.success || !json.data) {
-          throw new Error("Invalid response format from server");
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          throw new Error("Server did not return JSON: " + e.message);
         }
 
-        const {
-          accessToken = "",
-          refreshToken = "",
-          accessExpSeconds = 0,
-          refreshExpSeconds = 0,
-          tokenType = "Bearer"
-        } = json.data;
-
-        // Lưu vào localStorage
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("accessExpSeconds", accessExpSeconds.toString());
-        localStorage.setItem("refreshExpSeconds", refreshExpSeconds.toString());
-        localStorage.setItem("tokenType", tokenType);
-
-        console.log("Tokens saved, redirecting...");
-        window.location.href = "/dashboard.html";
+        console.log("Parsed JSON:", json);
+        document.body.innerText = "Check console for raw response 👀";
       } catch (err) {
         console.error("Login failed:", err);
         document.body.innerText = "Login failed: " + err.message;
@@ -52,6 +40,6 @@
   </script>
 </head>
 <body>
-  <p>Logging you in...</p>
+  <p>Verifying magic link...</p>
 </body>
 </html>
