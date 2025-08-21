@@ -20,18 +20,33 @@
           body: JSON.stringify({ token })
         });
 
-        const text = await res.text(); // lấy raw text trước
+        const text = await res.text();
         console.log("Raw response text:", text);
 
-        let json;
-        try {
-          json = JSON.parse(text);
-        } catch (e) {
-          throw new Error("Server did not return JSON: " + e.message);
-        }
-
+        const json = JSON.parse(text);
         console.log("Parsed JSON:", json);
-        document.body.innerText = "Check console for raw response 👀";
+
+        if (json.data) {
+          const {
+            accessToken,
+            refreshToken,
+            accessExpSeconds,
+            refreshExpSeconds,
+            TokenType
+          } = json.data;
+
+          // Lưu vào localStorage
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("refreshToken", refreshToken);
+          localStorage.setItem("accessExpSeconds", accessExpSeconds);
+          localStorage.setItem("refreshExpSeconds", refreshExpSeconds);
+          localStorage.setItem("tokenType", TokenType);
+
+          console.log("Login success, tokens saved");
+          window.location.href = "/dashboard.html";
+        } else {
+          throw new Error("Missing 'data' in response");
+        }
       } catch (err) {
         console.error("Login failed:", err);
         document.body.innerText = "Login failed: " + err.message;
@@ -40,6 +55,6 @@
   </script>
 </head>
 <body>
-  <p>Verifying magic link...</p>
+  <p>Logging you in...</p>
 </body>
 </html>
