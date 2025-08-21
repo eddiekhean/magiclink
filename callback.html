@@ -20,34 +20,30 @@
           body: JSON.stringify({ token })
         });
 
-        if (!res.ok) {
-          throw new Error("Verify failed: " + res.status);
-        }
-
         const json = await res.json();
-        console.log("Login success:", json);
+        console.log("Raw verify response:", json);
 
-        if (json.success && json.data) {
-          const {
-            accessToken,
-            refreshToken,
-            accessExpSeconds,
-            refreshExpSeconds,
-            tokenType
-          } = json.data;
-
-          // Lưu token vào localStorage
-          localStorage.setItem("accessToken", accessToken);
-          localStorage.setItem("refreshToken", refreshToken);
-          localStorage.setItem("accessExpSeconds", accessExpSeconds);
-          localStorage.setItem("refreshExpSeconds", refreshExpSeconds);
-          localStorage.setItem("tokenType", tokenType);
-
-          // Redirect sau khi login thành công
-          window.location.href = "/dashboard.html";
-        } else {
+        if (!res.ok || !json.success || !json.data) {
           throw new Error("Invalid response format from server");
         }
+
+        const {
+          accessToken = "",
+          refreshToken = "",
+          accessExpSeconds = 0,
+          refreshExpSeconds = 0,
+          tokenType = "Bearer"
+        } = json.data;
+
+        // Lưu vào localStorage
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("accessExpSeconds", accessExpSeconds.toString());
+        localStorage.setItem("refreshExpSeconds", refreshExpSeconds.toString());
+        localStorage.setItem("tokenType", tokenType);
+
+        console.log("Tokens saved, redirecting...");
+        window.location.href = "/dashboard.html";
       } catch (err) {
         console.error("Login failed:", err);
         document.body.innerText = "Login failed: " + err.message;
