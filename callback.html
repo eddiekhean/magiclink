@@ -24,19 +24,32 @@
           throw new Error("Verify failed: " + res.status);
         }
 
-        const data = await res.json();
-        console.log("Login success:", data);
+        const json = await res.json();
+        console.log("Login success:", json);
 
-        // Lưu tất cả field mà BE trả về
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        localStorage.setItem("accessExpSeconds", data.accessExpSeconds);
-        localStorage.setItem("refreshExpSeconds", data.refreshExpSeconds);
-        localStorage.setItem("tokenType", data.tokenType);
+        if (json.success && json.data) {
+          const {
+            accessToken,
+            refreshToken,
+            accessExpSeconds,
+            refreshExpSeconds,
+            tokenType
+          } = json.data;
 
-        // Redirect sau khi login thành công
-        window.location.href = "/dashboard.html";
+          // Lưu token vào localStorage
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("refreshToken", refreshToken);
+          localStorage.setItem("accessExpSeconds", accessExpSeconds);
+          localStorage.setItem("refreshExpSeconds", refreshExpSeconds);
+          localStorage.setItem("tokenType", tokenType);
+
+          // Redirect sau khi login thành công
+          window.location.href = "/dashboard.html";
+        } else {
+          throw new Error("Invalid response format from server");
+        }
       } catch (err) {
+        console.error("Login failed:", err);
         document.body.innerText = "Login failed: " + err.message;
       }
     });
