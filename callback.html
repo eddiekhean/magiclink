@@ -15,7 +15,7 @@
 
       try {
         // Gọi GET với token nằm ở query string
-        const res = await fetch(`http://localhost:8080/api/v1/auth/magiclink/verify?token=${encodeURIComponent(token)}`, {
+        const res = await fetch(`https://api-dev.ctix.io/api/v1/auth/magiclink/verify?token=${encodeURIComponent(token)}`, {
           method: "GET",
           headers: { "Accept": "application/json" }
         });
